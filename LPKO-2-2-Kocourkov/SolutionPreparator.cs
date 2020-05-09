@@ -9,17 +9,14 @@ namespace LPKO_2_2_Kocourkov
         {
             var lines = new List<string>();
 
-            var sets = GetSetLines(graph.NodeCount);
+            var sets = GetSetLines(graph.NodeCount, graph.Edges);
             lines.AddRange(sets);
-
-            var parameters = GetParamLines();
-            lines.AddRange(parameters);
 
             var variables = GetVariableLines();
             lines.AddRange(variables);
 
-            var function = GetFunctionLine();
-            lines.Add(function);
+            var function = GetFunctionLines();
+            lines.AddRange(function);
 
             var conditions = GetConditionLines();
             lines.AddRange(conditions);
@@ -27,79 +24,83 @@ namespace LPKO_2_2_Kocourkov
             var footer = GetFooter();
             lines.AddRange(footer);
 
-            var data = GetDataLines(graph.Edges);
-            lines.AddRange(data);
-
             return new GlpkProgram(lines);
         }
 
-        private static List<string> GetSetLines(int nodeCount)
+        private static IEnumerable<string> GetSetLines(int nodeCount, IEnumerable<Edge> edges)
         {
+            var edgeBuidler = new StringBuilder();
+            edgeBuidler.Append("set Edges := {");
+            foreach (var edge in edges)
+            {
+                edgeBuidler.Append($"({edge.Node1},{edge.Node2}),");
+            }
+            edgeBuidler.Remove(edgeBuidler.Length - 1, 1);
+            edgeBuidler.Append("};");
+
+            var edgeSet = edgeBuidler.ToString();
+            
             return new List<string>
             {
                 $"set Nodes := 0..{nodeCount-1};",
-                "set Edges, within Nodes cross Nodes;"
+                $"set Parties := 0..{nodeCount-1};",
+                edgeSet
             };
         }
 
-        private static List<string> GetParamLines()
-        {
-            return new List<string> { "param weight{(i,j) in Edges};" };
-        }
-
-        private static List<string> GetVariableLines()
-        {
-            return new List<string> { "var isRemoved{(i,j) in Edges}, binary;" };
-        }
-
-        private static string GetFunctionLine()
-        {
-            return "minimize total: sum{(i,j) in Edges} weight[i,j] * isRemoved[i,j];";
-        }
-
-        private static List<string> GetConditionLines()
+        private static IEnumerable<string> GetParams(int nodeCount)
         {
             return new List<string>
             {
-                "s.t. condition_circle4{i in Nodes, j in Nodes, k in Nodes, l in Nodes: not(i == j or j == k or k == l or l == i)}:",
-                "  ( if ((i,j) in Edges and (j,k) in Edges and (k,l) in Edges and (l,i) in Edges) then (isRemoved[i,j] + isRemoved[j,k] + isRemoved[k,l] + isRemoved[l,i]) else 1 ) >= 1;",
-                "s.t. condition_circle3{i in Nodes, j in Nodes, k in Nodes: not(i == j or j == k or k == i)}:",
-                "  ( if ((i,j) in Edges and (j,k) in Edges and (k,i) in Edges) then (isRemoved[i,j] + isRemoved[j,k] + isRemoved[k,i]) else 1 ) >= 1;"
+                $"param PartiesLimit := {nodeCount};"
             };
         }
 
-        private static List<string> GetFooter()
+        private static IEnumerable<string> GetVariableLines()
+        {
+            return new List<string>
+            {
+                "var inParty{i in Nodes, j in Parties}, binary;",
+                "var partyAssigned{i in Nodes}, binary;"
+            };
+        }
+
+        private static IEnumerable<string> GetFunctionLines()
+        {
+            return new List<string>
+            {
+                "minimize total: sum{i in Nodes} partyAssigned[i];"
+            };
+        }
+
+        private static IEnumerable<string> GetConditionLines()
+        {
+            return new List<string>
+            {
+                "s.t. partyMember{i in Nodes, j in Nodes, p in Parties: not(i == j)}:",
+                "  ( if ( not ((i,j) in Edges)) then (inParty[i,p] + inParty[j,p]) else 0 ) <= 1;",
+                "s.t. partyUsed{i in Nodes, p in Parties}:",
+                "  inParty[i,p] <= partyAssigned[p];",
+                "s.t. exactlyOne{i in Nodes}:",
+                "  sum{p in Parties} inParty[i,p] = 1;"
+            };
+        }
+
+        private static IEnumerable<string> GetFooter()
         {
             return new List<string>
             {
                 "solve;",
-                "printf \"#OUTPUT: %d\\n\", sum{(i,j) in Edges} weight[i,j] * isRemoved[i,j];",
-                "for {(i,j) in Edges: i != j}",
+                "printf \"#OUTPUT: %d\\n\", sum{i in Nodes} partyAssigned[i];",
+                "for {i in Nodes}",
                 "{",
-                "  printf (if isRemoved[i,j] = 1 then \"%d --> %d\\n\" else \"\"), i, j;",
+                "  for {p in Parties}",
+                "  {",
+                "    printf (if inParty[i,p] = 1 then \"v_%d: %d\\n\" else \"\"), i, p;",
+                "  }",
                 "}",
                 "printf \"#OUTPUT END\\n\";",
             };
-        }
-        private static List<string> GetDataLines(IEnumerable<Edge> edges)
-        {
-            var data = new List<string>
-            {
-                "data;"
-            };
-
-            var weightBuilder = new StringBuilder();
-            weightBuilder.Append("param : Edges := ");
-            foreach (var edge in edges)
-            {
-                weightBuilder.AppendLine($"                {edge.Node1} {edge.Node2}");
-            }
-            weightBuilder.Remove(weightBuilder.Length - 2, 2); //Remove the trailing "\r\n"
-            weightBuilder.Append(";");
-            data.Add(weightBuilder.ToString());
-
-            data.Add("end;");
-            return data;
         }
     }
 }

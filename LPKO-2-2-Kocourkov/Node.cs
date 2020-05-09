@@ -8,5 +8,10 @@
         }
 
         public int Number { get; }
+
+        public override string ToString()
+        {
+            return Number.ToString();
+        }
     }
 }
