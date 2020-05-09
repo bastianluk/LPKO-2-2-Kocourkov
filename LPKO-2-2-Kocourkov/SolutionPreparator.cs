@@ -69,7 +69,7 @@ namespace LPKO_2_2_Kocourkov
         {
             return new List<string>
             {
-                "minimize total: sum{i in Nodes} partyAssigned[i];"
+                "minimize total: sum{p in Parties} partyAssigned[p];"
             };
         }
 
@@ -91,7 +91,7 @@ namespace LPKO_2_2_Kocourkov
             return new List<string>
             {
                 "solve;",
-                "printf \"#OUTPUT: %d\\n\", sum{i in Nodes} partyAssigned[i];",
+                "printf \"#OUTPUT: %d\\n\", sum{p in Parties} partyAssigned[p];",
                 "for {i in Nodes}",
                 "{",
                 "  for {p in Parties}",
