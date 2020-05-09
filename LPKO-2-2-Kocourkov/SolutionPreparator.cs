@@ -78,7 +78,7 @@ namespace LPKO_2_2_Kocourkov
             return new List<string>
             {
                 "s.t. partyMember{i in Nodes, j in Nodes, p in Parties: i != j}:",
-                "  ( if ((isNodeInParty[i,p] = 1) and (isNodeInParty[j,p] = 1)) then (((i,j) in Edges) or ((j,i) in Edges)) else 1 ) = 1;",
+                "  ( if (not( (i,j) in Edges ) or not ( (j,i) in Edges )) then (isNodeInParty[i,p] + isNodeInParty[j,p]) else 0 ) <= 1;",
                 "s.t. partyUsed{i in Nodes, p in Parties}:",
                 "  isNodeInParty[i,p] <= isPartyAssigned[p];",
                 "s.t. exactlyOne{i in Nodes}:",
