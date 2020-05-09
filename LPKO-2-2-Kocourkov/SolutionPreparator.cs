@@ -60,8 +60,8 @@ namespace LPKO_2_2_Kocourkov
         {
             return new List<string>
             {
-                "var inParty{i in Nodes, j in Parties}, binary;",
-                "var partyAssigned{i in Nodes}, binary;"
+                "var isNodeInParty{i in Nodes, j in Parties}, binary;",
+                "var isPartyAssigned{p in Parties}, binary;"
             };
         }
 
@@ -69,7 +69,7 @@ namespace LPKO_2_2_Kocourkov
         {
             return new List<string>
             {
-                "minimize total: sum{p in Parties} partyAssigned[p];"
+                "minimize total: sum{p in Parties} isPartyAssigned[p];"
             };
         }
 
@@ -77,12 +77,12 @@ namespace LPKO_2_2_Kocourkov
         {
             return new List<string>
             {
-                "s.t. partyMember{i in Nodes, j in Nodes, p in Parties: not(i == j)}:",
-                "  ( if ( not ((i,j) in Edges)) then (inParty[i,p] + inParty[j,p]) else 0 ) <= 1;",
+                "s.t. partyMember{i in Nodes, j in Nodes, p in Parties: i != j}:",
+                "  ( if ((isNodeInParty[i,p] = 1) and (isNodeInParty[j,p] = 1)) then (((i,j) in Edges) or ((j,i) in Edges)) else 1 ) = 1;",
                 "s.t. partyUsed{i in Nodes, p in Parties}:",
-                "  inParty[i,p] <= partyAssigned[p];",
+                "  isNodeInParty[i,p] <= isPartyAssigned[p];",
                 "s.t. exactlyOne{i in Nodes}:",
-                "  sum{p in Parties} inParty[i,p] = 1;"
+                "  sum{p in Parties} isNodeInParty[i,p] = 1;"
             };
         }
 
@@ -91,12 +91,12 @@ namespace LPKO_2_2_Kocourkov
             return new List<string>
             {
                 "solve;",
-                "printf \"#OUTPUT: %d\\n\", sum{p in Parties} partyAssigned[p];",
+                "printf \"#OUTPUT: %d\\n\", sum{p in Parties} isPartyAssigned[p];",
                 "for {i in Nodes}",
                 "{",
                 "  for {p in Parties}",
                 "  {",
-                "    printf (if inParty[i,p] = 1 then \"v_%d: %d\\n\" else \"\"), i, p;",
+                "    printf (if isNodeInParty[i,p] = 1 then \"v_%d: %d\\n\" else \"\"), i, p;",
                 "  }",
                 "}",
                 "printf \"#OUTPUT END\\n\";",
