@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Mime;
 
 namespace LPKO_2_2_Kocourkov
 {
     public sealed class Parser
     {
-        public static Graph ReadInput()
+        public static Graph ReadInput(TextReader reader)
         {
-            var graphInput = Console.ReadLine();
+            var graphInput = reader.ReadLine();
             var splitGraph = graphInput.Split(' ');
 
             var isNodeCount = int.TryParse(splitGraph[1], out var nodeCount);
@@ -25,11 +27,11 @@ namespace LPKO_2_2_Kocourkov
 
             for (int i = 0; i < edgeCount; i++)
             {
-                var edgeInputLine = Console.ReadLine();
+                var edgeInputLine = reader.ReadLine();
                 var delimiters = new string[] {" -- "};
                 var splitEdgeInput = edgeInputLine.Trim().Split(delimiters, StringSplitOptions.None);
-                var isNode1 = int.TryParse(splitEdgeInput[0], out var node1Number);
-                var isNode2 = int.TryParse(splitEdgeInput[1], out var node2Number);
+                var isNode1 = int.TryParse(splitEdgeInput[0].Trim(), out var node1Number);
+                var isNode2 = int.TryParse(splitEdgeInput[1].Trim(), out var node2Number);
 
                 if (!isNode1 || !isNode2 || node1Number > node2Number || node1Number >= nodeCount || node2Number >= nodeCount)
                 {
