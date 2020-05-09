@@ -1,6 +1,6 @@
 # Dokumentace
 
-Dokumentace k generátoru pro příklad `Kocourkovské volby` napsaném v jazyce C#.
+Dokumentace k generátoru pro příklad `Kocourkovské volby`[link](https://kam.mff.cuni.cz/~balko/lpko1920/ukolPrakticky.pdf) napsaném v jazyce C#.
 
 ## Sestavení
 
