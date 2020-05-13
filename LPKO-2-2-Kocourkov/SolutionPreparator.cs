@@ -12,7 +12,7 @@ namespace LPKO_2_2_Kocourkov
             var sets = GetSetLines(graph.NodeCount, graph.Edges);
             lines.AddRange(sets);
 
-            var variables = GetVariableLines();
+            var variables = GetVariableLines(graph.NodeCount);
             lines.AddRange(variables);
 
             var function = GetFunctionLines();
@@ -34,7 +34,7 @@ namespace LPKO_2_2_Kocourkov
             foreach (var edge in edges)
             {
                 edgeBuidler.Append($"({edge.Node1},{edge.Node2}),");
-                //edgeBuidler.Append($"({edge.Node2},{edge.Node1}),");
+                edgeBuidler.Append($"({edge.Node2},{edge.Node1}),");
             }
             edgeBuidler.Remove(edgeBuidler.Length - 1, 1);
             edgeBuidler.Append("};");
@@ -43,19 +43,19 @@ namespace LPKO_2_2_Kocourkov
             
             return new List<string>
             {
-                $"set Nodes := 0..{nodeCount-1};",
-                $"set Parties := 0..{nodeCount-1};",
-                edgeSet
+                $"set NodeIndexes := 0..{nodeCount-1};",
+                $"set Nodes := (0..{nodeCount * nodeCount - 1});",
+                edgeSet,
+                "set Complement := Nodes cross Nodes diff Edges;"
             };
         }
 
-        private static IEnumerable<string> GetVariableLines()
+        private static IEnumerable<string> GetVariableLines(int count)
         {
             return new List<string>
             {
-                "var isNodeInParty{i in Nodes, p in Parties}, binary;",
-                "var isPairInParty{i in Nodes, j in Nodes, p in Parties}, binary;",
-                "var isPartyAssigned{p in Parties}, binary;"
+                $"var Parties, >= 0, <= {count}, integer;",
+                "var nodeColor{i in Nodes}, binary;"
             };
         }
 
@@ -63,7 +63,7 @@ namespace LPKO_2_2_Kocourkov
         {
             return new List<string>
             {
-                "minimize total: sum{p in Parties} isPartyAssigned[p];"
+                "minimize obj: Parties;"
             };
         }
 
@@ -71,16 +71,12 @@ namespace LPKO_2_2_Kocourkov
         {
             return new List<string>
             {
-                "s.t. bound{i in Nodes, p in Parties}:",
-                "  isNodeInParty[i,p] <= isPartyAssigned[p];",
-                "s.t. edgeCon{i in Nodes, j in Nodes, p in Parties: i != j}:",
-                "  ( if (not( (i,j) in Edges )) then (isNodeInParty[i,p] + isNodeInParty[j,p]) else (isNodeInParty[i,p] + isNodeInParty[j,p] - isPairInParty[i,j,p]) ) <= 1;",
-                "s.t. boundOne{i in Nodes, j in Nodes, p in Parties}:",
-                "  isPairInParty[i, j, p] <= isNodeInParty[i, p]: i != j;",
-                "s.t. boundTwo{i in Nodes, j in Nodes, p in Parties: i != j}:",
-                "  isPairInParty[i, j, p] <= isNodeInParty[j, p];",
-                "s.t. exactlyOne{i in Nodes, j in Nodes: i != j}:",
-                "  sum{p in Parties} isPairInParty[i,j,p] = 1;"
+                "s.t. edgeCon{(i, j) in Complement, k in NodeIndexes}:",
+                "  nodeColor[i*N + k] + nodeColor[j*N + k] <= 1;",
+                "s.t. exactlyOne{i in Nodes}:",
+                "  sum{p in Parties} isNodeInParty[i,p] = 1;",
+                "s.t. smallest{i in NodeIndexes, j in NodeIndexes}:",
+                "  nodeColor[i*N + j] * j <= Parties + 1;"
             };
         }
 
@@ -89,7 +85,7 @@ namespace LPKO_2_2_Kocourkov
             return new List<string>
             {
                 "solve;",
-                "printf \"#OUTPUT: %d\\n\", sum{p in Parties} isPartyAssigned[p];",
+                "printf \"#OUTPUT: %d\\n\", Parties;",
                 "for {i in Nodes}",
                 "{",
                 "  for {p in Parties}",
