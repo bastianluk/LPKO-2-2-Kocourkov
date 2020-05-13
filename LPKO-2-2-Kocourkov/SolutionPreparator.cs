@@ -34,6 +34,7 @@ namespace LPKO_2_2_Kocourkov
             foreach (var edge in edges)
             {
                 edgeBuidler.Append($"({edge.Node1},{edge.Node2}),");
+                //edgeBuidler.Append($"({edge.Node2},{edge.Node1}),");
             }
             edgeBuidler.Remove(edgeBuidler.Length - 1, 1);
             edgeBuidler.Append("};");
@@ -48,19 +49,12 @@ namespace LPKO_2_2_Kocourkov
             };
         }
 
-        private static IEnumerable<string> GetParams(int nodeCount)
-        {
-            return new List<string>
-            {
-                $"param PartiesLimit := {nodeCount};"
-            };
-        }
-
         private static IEnumerable<string> GetVariableLines()
         {
             return new List<string>
             {
-                "var isNodeInParty{i in Nodes, j in Parties}, binary;",
+                "var isNodeInParty{i in Nodes, p in Parties}, binary;",
+                "var isPairInParty{i in Nodes, j in Nodes, p in Parties}, binary;",
                 "var isPartyAssigned{p in Parties}, binary;"
             };
         }
@@ -77,12 +71,16 @@ namespace LPKO_2_2_Kocourkov
         {
             return new List<string>
             {
-                "s.t. partyMember{i in Nodes, j in Nodes, p in Parties: i != j}:",
-                "  ( if (not( (i,j) in Edges ) or not ( (j,i) in Edges )) then (isNodeInParty[i,p] + isNodeInParty[j,p]) else 0 ) <= 1;",
-                "s.t. partyUsed{i in Nodes, p in Parties}:",
+                "s.t. bound{i in Nodes, p in Parties}:",
                 "  isNodeInParty[i,p] <= isPartyAssigned[p];",
-                "s.t. exactlyOne{i in Nodes}:",
-                "  sum{p in Parties} isNodeInParty[i,p] = 1;"
+                "s.t. edgeCon{i in Nodes, j in Nodes, p in Parties: i != j}:",
+                "  ( if (not( (i,j) in Edges )) then (isNodeInParty[i,p] + isNodeInParty[j,p]) else (isNodeInParty[i,p] + isNodeInParty[j,p] - isPairInParty[i,j,p]) ) <= 1;",
+                "s.t. boundOne{i in Nodes, j in Nodes, p in Parties}:",
+                "  isPairInParty[i, j, p] <= isNodeInParty[i, p]: i != j;",
+                "s.t. boundTwo{i in Nodes, j in Nodes, p in Parties: i != j}:",
+                "  isPairInParty[i, j, p] <= isNodeInParty[j, p];",
+                "s.t. exactlyOne{i in Nodes, j in Nodes: i != j}:",
+                "  sum{p in Parties} isPairInParty[i,j,p] = 1;"
             };
         }
 
