@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace LPKO_2_2_Kocourkov
@@ -31,10 +32,12 @@ namespace LPKO_2_2_Kocourkov
         {
             var edgeBuidler = new StringBuilder();
             edgeBuidler.Append("set Edges := {");
-            foreach (var edge in edges)
+
+            var complementaryEdges = GetComplementaryEdges(nodeCount, edges);
+
+            foreach (var edge in complementaryEdges)
             {
                 edgeBuidler.Append($"({edge.Node1},{edge.Node2}),");
-                edgeBuidler.Append($"({edge.Node2},{edge.Node1}),");
             }
             edgeBuidler.Remove(edgeBuidler.Length - 1, 1);
             edgeBuidler.Append("};");
@@ -43,19 +46,33 @@ namespace LPKO_2_2_Kocourkov
             
             return new List<string>
             {
-                $"set NodeIndexes := 0..{nodeCount-1};",
-                $"set Nodes := (0..{nodeCount * nodeCount - 1});",
-                edgeSet,
-                "set Complement := Nodes cross Nodes diff Edges;"
+                $"set Nodes := 0..{nodeCount-1};",
+                $"set PossibleParties := 1..{nodeCount};",
+                edgeSet
             };
+        }
+
+        private static IEnumerable<Edge> GetComplementaryEdges(int count, IEnumerable<Edge> edges)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                for (int j = i + 1; j < count; j++)
+                {
+                    var edge = new Edge(new Node(i), new Node(j));
+                    if (!edges.Contains(edge))
+                    {
+                        yield return edge;
+                    }
+                }
+            }
         }
 
         private static IEnumerable<string> GetVariableLines(int count)
         {
             return new List<string>
             {
-                $"var Parties, >= 0, <= {count}, integer;",
-                "var nodeColor{i in Nodes}, binary;"
+                $"var Parties, >= 1, <= {count}, integer;",
+                "var nodeInParty{i in Nodes, p in PossibleParties}, binary;"
             };
         }
 
@@ -71,12 +88,12 @@ namespace LPKO_2_2_Kocourkov
         {
             return new List<string>
             {
-                "s.t. edgeCon{(i, j) in Complement, k in NodeIndexes}:",
-                "  nodeColor[i*N + k] + nodeColor[j*N + k] <= 1;",
-                "s.t. exactlyOne{i in Nodes}:",
-                "  sum{p in Parties} isNodeInParty[i,p] = 1;",
-                "s.t. smallest{i in NodeIndexes, j in NodeIndexes}:",
-                "  nodeColor[i*N + j] * j <= Parties + 1;"
+                "s.t. edgeCon{(i, j) in Edges, p in PossibleParties}:",
+                "  nodeInParty[i, p] + nodeInParty[j , p] <= 1;",
+                "s.t. oneColor{i in Nodes}:",
+                "  sum{p in PossibleParties} nodeInParty[i, p] = 1;",
+                "s.t. minZ{i in Nodes, p in PossibleParties}:",
+                "  nodeInParty[i, p] * p <= Parties;"
             };
         }
 
@@ -88,9 +105,9 @@ namespace LPKO_2_2_Kocourkov
                 "printf \"#OUTPUT: %d\\n\", Parties;",
                 "for {i in Nodes}",
                 "{",
-                "  for {p in Parties}",
+                "  for {p in PossibleParties}",
                 "  {",
-                "    printf (if isNodeInParty[i,p] = 1 then \"v_%d: %d\\n\" else \"\"), i, p;",
+                "    printf (if nodeInParty[i,p] = 1 then \"v_%d: %d\\n\" else \"\"), i, (p-1);",
                 "  }",
                 "}",
                 "printf \"#OUTPUT END\\n\";",

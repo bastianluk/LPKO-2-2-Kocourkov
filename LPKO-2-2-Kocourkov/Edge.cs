@@ -11,5 +11,14 @@
         public Node Node1 { get; }
 
         public Node Node2 { get; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Edge e)
+            {
+                return (e.Node1.Equals(Node1) && e.Node2.Equals(Node2)) || (e.Node2.Equals(Node1) && e.Node1.Equals(Node2));
+            }
+            return base.Equals(obj);
+        }
     }
 }

@@ -13,5 +13,15 @@
         {
             return Number.ToString();
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Node n)
+            {
+                return Number == n.Number;
+            }
+
+            return base.Equals(obj);
+        }
     }
 }
