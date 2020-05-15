@@ -90,9 +90,9 @@ namespace LPKO_2_2_Kocourkov
             {
                 "s.t. edgeCon{(i, j) in Edges, p in PossibleParties}:",
                 "  nodeInParty[i, p] + nodeInParty[j , p] <= 1;",
-                "s.t. oneColor{i in Nodes}:",
+                "s.t. oneParty{i in Nodes}:",
                 "  sum{p in PossibleParties} nodeInParty[i, p] = 1;",
-                "s.t. minZ{i in Nodes, p in PossibleParties}:",
+                "s.t. smallestSet{i in Nodes, p in PossibleParties}:",
                 "  nodeInParty[i, p] * p <= Parties;",
                 "solve;"
             };
