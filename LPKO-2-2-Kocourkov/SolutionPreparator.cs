@@ -93,7 +93,8 @@ namespace LPKO_2_2_Kocourkov
                 "s.t. oneColor{i in Nodes}:",
                 "  sum{p in PossibleParties} nodeInParty[i, p] = 1;",
                 "s.t. minZ{i in Nodes, p in PossibleParties}:",
-                "  nodeInParty[i, p] * p <= Parties;"
+                "  nodeInParty[i, p] * p <= Parties;",
+                "solve;"
             };
         }
 
@@ -101,7 +102,6 @@ namespace LPKO_2_2_Kocourkov
         {
             return new List<string>
             {
-                "solve;",
                 "printf \"#OUTPUT: %d\\n\", Parties;",
                 "for {i in Nodes}",
                 "{",
