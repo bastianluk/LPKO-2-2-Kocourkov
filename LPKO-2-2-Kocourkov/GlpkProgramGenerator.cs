@@ -4,7 +4,7 @@ using System.Text;
 
 namespace LPKO_2_2_Kocourkov
 {
-    public sealed class SolutionPreparator
+    public sealed class GlpkProgramGenerator
     {
         public static GlpkProgram PrepareProgram(Graph graph)
         {
