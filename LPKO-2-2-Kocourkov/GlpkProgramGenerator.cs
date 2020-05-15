@@ -28,6 +28,9 @@ namespace LPKO_2_2_Kocourkov
             return new GlpkProgram(lines);
         }
 
+        /// <summary>
+        /// Generates the lines representing the different sets (Nodes, PossibleParties and Edges) needed in this linear program.
+        /// </summary>
         private static IEnumerable<string> GetSetLines(int nodeCount, IEnumerable<Edge> edges)
         {
             var edgeBuidler = new StringBuilder();
@@ -52,14 +55,18 @@ namespace LPKO_2_2_Kocourkov
             };
         }
 
+        /// <summary>
+        /// Helper function to generate the complementary edges of the graph.
+        /// </summary>
         private static IEnumerable<Edge> GetComplementaryEdges(int count, IEnumerable<Edge> edges)
         {
+            var list = edges.ToList();
             for (int i = 0; i < count; i++)
             {
                 for (int j = i + 1; j < count; j++)
                 {
                     var edge = new Edge(new Node(i), new Node(j));
-                    if (!edges.Contains(edge))
+                    if (!list.Contains(edge))
                     {
                         yield return edge;
                     }
@@ -67,6 +74,9 @@ namespace LPKO_2_2_Kocourkov
             }
         }
 
+        /// <summary>
+        /// Generates the line representing the variable (indicator nodeInParty and (NumberOf)Parties) of the linear program.
+        /// </summary>
         private static IEnumerable<string> GetVariableLines(int count)
         {
             return new List<string>
@@ -76,6 +86,9 @@ namespace LPKO_2_2_Kocourkov
             };
         }
 
+        /// <summary>
+        /// Generates the line representing the function that will be minimized.
+        /// </summary>
         private static IEnumerable<string> GetFunctionLines()
         {
             return new List<string>
@@ -84,6 +97,9 @@ namespace LPKO_2_2_Kocourkov
             };
         }
 
+        /// <summary>
+        /// Generates the lines representing the conditions needed for this linear program - they are there to find the minimal coloring of the complementary graph.
+        /// </summary>
         private static IEnumerable<string> GetConditionLines()
         {
             return new List<string>
@@ -98,6 +114,9 @@ namespace LPKO_2_2_Kocourkov
             };
         }
 
+        /// <summary>
+        /// Generates the lines that represent the correct output format of the linear program.
+        /// </summary>
         private static IEnumerable<string> GetFooter()
         {
             return new List<string>
