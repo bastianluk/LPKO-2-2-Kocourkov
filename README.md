@@ -56,8 +56,17 @@ Podmínky vycházejí z toho, že řešíme problém obarvení complementárníh
 
 ### Nevýhoda implementace
 
-Řešení je pomalé (Příklad pro `vstup-s8.txt`).
+Řešení je pomalé.
 
+(Příklad pro `vstup-s6.txt`)
+```
+INTEGER OPTIMAL SOLUTION FOUND
+Time used:   316.3 secs
+Memory used: 15.4 Mb (16125409 bytes)
+#OUTPUT: 7
+```
+
+(Příklad pro `vstup-s8.txt`)
 ```
 INTEGER OPTIMAL SOLUTION FOUND
 Time used:   517.0 secs
