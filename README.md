@@ -14,6 +14,36 @@ Generátoru se jako argument pošlu path ke vstupnímu souboru a on vygeneruje s
 
 --todo--
 
+
+```
+INTEGER OPTIMAL SOLUTION FOUND
+Time used:   517.0 secs
+Memory used: 30.6 Mb (32111250 bytes)
+#OUTPUT: 8
+v_0: 2
+v_1: 5
+v_2: 0
+v_3: 3
+v_4: 4
+v_5: 4
+v_6: 1
+v_7: 1
+v_8: 6
+v_9: 3
+v_10: 3
+v_11: 7
+v_12: 6
+v_13: 1
+v_14: 2
+v_15: 6
+v_16: 5
+v_17: 2
+v_18: 2
+v_19: 5
+v_20: 0
+#OUTPUT END
+```
+
 ### Nemá optimální řešení
 
 --todo--
